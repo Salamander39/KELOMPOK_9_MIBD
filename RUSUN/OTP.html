@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Offside&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css?family=Nuosu+SIL&display=swap" rel="stylesheet" />
+  <link href="./css/OTP.css" rel="stylesheet" />
+  <title>OTP Verification</title>
+</head>
+<body>
+  <div class="v5_13">
+    <!-- Left gray panel -->
+    <div class="v5_16"></div>
+    
+    <!-- Back button -->
+    <button class="exit-button">
+      <img src="images/back.png" alt="Back" />
+    </button>
+    
+    <!-- Shield icon -->
+    <div class="shield-icon">
+      <img src="images/v21_122.png" alt="Shield" />
+    </div>
+    
+    <!-- OTP Content -->
+    <span class="v5_17">OTP Verification</span>
+    <span class="v5_18">Please enter OTP code</span>
+    
+    <!-- OTP Boxes -->
+    <div class="otp-container">
+      <input type="text" class="otp-box" maxlength="1" data-index="0" />
+      <input type="text" class="otp-box" maxlength="1" data-index="1" />
+      <input type="text" class="otp-box" maxlength="1" data-index="2" />
+      <input type="text" class="otp-box" maxlength="1" data-index="3" />
+      <input type="text" class="otp-box" maxlength="1" data-index="4" />
+      <input type="text" class="otp-box" maxlength="1" data-index="5" />
+    </div>
+    
+    <button id="verifyButton" class="signin-button" disabled>Verify</button>
+    <button id="sendOtpButton" class="send-otp-button">Send OTP Code</button>
+  </div>
+</body>
+  <script src="./otp.js"></script><script src="./common.js"></script>
+</html>

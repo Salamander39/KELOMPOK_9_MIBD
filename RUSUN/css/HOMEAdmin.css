@@ -1,0 +1,108 @@
+/* Profile Page Styles */
+.profile-container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  padding: 0;
+  margin: 0;
+}
+
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Offside', sans-serif;
+  background-color: #c3c3c3;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Exit Button */
+.exit-button {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.exit-button img {
+  width: 60px;
+  height: 60px;
+}
+
+.exit-button:hover img{
+  filter: brightness(1.1);
+}
+
+/* Circular Menu (Now Vertical Menu) */
+.circular-menu {
+  position: absolute;
+  top: 50%;
+  left: 30px;
+  transform: translateY(-29.5%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Menu Buttons */
+.menu-button {
+  width: 100px;
+  height: 100px;
+  border: none;
+  background: none; /* no white background */
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s ease;
+}
+
+.menu-button img {
+  width: 200px;
+  height: 200px;
+}
+
+.menu-button:hover {
+  filter: brightness(1.1);
+}
+
+.aktivitas-btn {
+  top: 50%;
+  left: 50%;
+  transform: translate(320%, -60%);
+}
+
+.profil-btn {
+  top: 50%;
+  left: 0%;
+  transform: translate(680%, -180%);
+}
+
+.unit-btn {
+  top: 50%;
+  left: 50%;
+  transform: translate(1050%, -300%);
+}
+
+.data-btn {
+  top: 50%;
+  left: 50%;
+  transform: translate(320%, -130%);
+}
+
+.sim-btn {
+  top: 50%;
+  left: 50%;
+  transform: translate(680%, -240%);
+}

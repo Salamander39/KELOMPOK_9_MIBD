@@ -1,0 +1,202 @@
+/* OTP Container */
+.otp-container {
+  position: absolute;
+  top: 270px;
+  left: 56px;
+  width: 396px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* OTP Boxes */
+.otp-box {
+  width: 60px;
+  height: 64px;
+  background: rgba(217,217,217,1);
+  border: none;
+  border-radius: 19px;
+  font-family: 'Offside', sans-serif;
+  font-size: 32px;
+  text-align: center;
+  outline: none;
+}
+
+/* Verify Button (reusing signin-button style) */
+.signin-button {
+  position: absolute;
+  top: 360px;
+  left: 56px;
+  width: 396px;
+  height: 60px;
+  background: rgba(13,0,0,1);
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-family: 'Offside', sans-serif;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.signin-button:disabled {
+  background: rgba(13,0,0,0.5);
+  cursor: not-allowed;
+}
+
+/* Adjust text positions */
+.v5_17 {
+  /* Welcome back text - now says OTP Verification */
+  position: absolute;
+  top: 116px;
+  left: 53px;
+  font-family: 'Nuosu SIL', serif;
+  font-size: 48px;
+  color: rgba(13,0,0,1);
+  text-align: left;
+}
+
+.v5_18 {
+  /* Subtext - now says "Please enter OTP code" */
+  position: absolute;
+  top: 194px;
+  left: 56px;
+  font-family: 'Nuosu SIL', serif;
+  font-size: 20px;
+  color: rgba(141,139,139,1);
+  text-align: left;
+}
+
+/* exit Button */
+.exit-button {
+  position: absolute;
+  top: 40px;
+  left: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.exit-button img {
+  width: 60px;
+  height: 60px;
+}
+
+.exit-button:hover img{
+  filter: brightness(1.1);
+}
+
+/* Shield Icon */
+.shield-icon {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 202px;
+  height: 202px;
+}
+
+.shield-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* OTP Container */
+.otp-container {
+  position: absolute;
+  top: 370px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 396px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* OTP Boxes */
+.otp-box {
+  width: 50px;
+  height: 64px;
+  background: rgba(217,217,217,1);
+  border: none;
+  border-radius: 19px;
+  font-family: 'Offside', sans-serif;
+  font-size: 32px;
+  text-align: center;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.otp-box:focus {
+  box-shadow: 0 0 5px rgba(0,105,59,0.5);
+}
+
+/* Text styles (adjusted positions) */
+.v5_17 {
+  position: absolute;
+  top: 280px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Nuosu SIL', serif;
+  font-size: 32px;
+  color: rgba(0,105,59,1);
+  text-align: center;
+  width: 100%;
+}
+
+.v5_18 {
+  position: absolute;
+  top: 320px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Nuosu SIL', serif;
+  font-size: 20px;
+  color: rgba(141,139,139,1);
+  text-align: center;
+  width: 100%;
+}
+
+/* Verify Button */
+.signin-button {
+  position: absolute;
+  top: 470px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 396px;
+  height: 60px;
+  background: rgba(13,0,0,1);
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-family: 'Offside', sans-serif;
+  font-size: 20px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.signin-button:disabled {
+  background: rgba(13,0,0,0.5);
+  cursor: not-allowed;
+}
+
+.send-otp-button {
+  position: absolute;
+  top: 340px;
+  left: 34%;
+  transform: translateX(-50%);
+  transform: translateY(400%);
+  width: 200px;
+  height: 50px;
+  background: rgba(0,105,59,1);
+  border-radius: 10px;
+  border: none;
+  color: white;
+  font-family: 'Offside', sans-serif;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.send-otp-button:hover {
+  background: rgba(0,85,39,1);
+}
