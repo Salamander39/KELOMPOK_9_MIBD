@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css?family=Offside&display=swap" rel="stylesheet">
+  <title>Admin Edit Menu</title>
+  <style>
+    /* Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Offside', sans-serif;
+      background-color: #c3c3c3;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Profile Page Styles */
+    .profile-container {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background-size: cover;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Exit Button */
+    .exit-button {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 10;
+    }
+
+    .exit-button img {
+      width: 60px;
+      height: 60px;
+    }
+
+    .exit-button:hover img {
+      filter: brightness(1.1);
+    }
+
+    /* Circular Menu (Now Vertical Menu) */
+    .circular-menu {
+      position: absolute;
+      top: 50%;
+      left: 30px;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Menu Buttons */
+    .menu-button {
+      width: 100px;
+      height: 100px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.5s ease;
+    }
+
+    .menu-button img {
+      width: 200px;
+      height: 200px;
+    }
+
+    .menu-button:hover {
+      filter: brightness(1.1);
+    }
+
+    .admin_IOT-btn {
+      top: 50%;
+      left: 50%;
+      transform: translate(320%, -60%);
+    }
+
+    .admin_edit_profil-btn {
+      top: 50%;
+      left: 0%;
+      transform: translate(680%, -180%);
+    }
+
+    .unit-btn {
+      top: 50%;
+      left: 50%;
+      transform: translate(1050%, -300%);
+    }
+  </style>
+</head>
+<body>
+  <div class="profile-container">
+    <button class="exit-button">
+      <img src="images/back.png" alt="Exit">
+    </button>
+    
+    <div class="circular-menu">
+      <div class="menu-button admin_IOT-btn" tabindex="0" role="button">
+        <img src="images/admin_IOT.png" alt="Admin IOT">
+      </div>
+      
+      <div class="menu-button admin_edit_profil-btn" tabindex="0" role="button">
+        <img src="images/profilHP.png" alt="Profil">
+      </div>
+      
+      <div class="menu-button unit-btn" tabindex="0" role="button">
+        <img src="images/unitHP.png" alt="Unit">
+      </div>
+    </div>
+  </div>
+  <script src="./common.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      // Link for "Profil" button to edit_pemilik.php
+      const editAdminBtn = document.querySelector('.admin_edit_profil-btn');
+      if (editAdminBtn) {
+          editAdminBtn.addEventListener('click', function () {
+          window.location.href = 'edit_pemilik.php';
+          });
+      }
+
+      // Link for "Unit" button to edit_prusun.php
+      const unitBtn = document.querySelector('.unit-btn');
+      if (unitBtn) {
+          unitBtn.addEventListener('click', function () {
+              window.location.href = 'edit_prusun.php';
+          });
+      }
+
+      // Link for the "Back" button (exit-button) to home.admin.html
+      const exitButton = document.querySelector('.exit-button');
+      if (exitButton) {
+        exitButton.addEventListener('click', function() {
+          window.location.href = 'HOME_Admin.html'; 
+        });
+      }
+    });
+  </script>
+</body>
+</html>

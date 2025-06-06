@@ -2,38 +2,53 @@
 session_start();
 require_once 'config.php';
 
-// Ganti ini dengan session user ID yang sebenarnya
-$userId = $_SESSION['user_id'] ?? 1;
-if (!$userId) die("Unauthorized");
+$userId = $_SESSION['user_id'] ?? null;
+$unit = $_GET['unit'] ?? null;
+$userRole = $_SESSION['userRole'] ?? null;
 
-// Ambil unit dari query-string
-$unit = $_GET['unit'] ?? '';
-if (!$unit) die("Unit not specified");
+if ($unit === null) {
+    die("Unit parameter is missing");
+}
 
-// Filter hanya perangkat di unit ini
+// Modified query without inline comments
 $sql = "
-  SELECT p.serialNum, p.tglPasang
-    FROM PerangkatIOT p
-    JOIN Kepemilikan k 
-      ON p.noUnit = k.noUnit
-   WHERE k.idPengguna = ? 
-     AND p.noUnit    = ?
-   ORDER BY p.serialNum
+  SELECT
+    p.serialNum,
+    p.tglPasang,
+    CASE 
+      WHEN SUBSTRING(p.serialNum, 3, 1) = '2' THEN COALESCE(a.statusAkt, 'OFF')
+      ELSE NULL
+    END AS statusAkt,
+    k.idPengguna as ownerId
+  FROM PerangkatIOT p
+  JOIN Kepemilikan k ON p.noUnit = k.noUnit
+  LEFT JOIN Aktuator a ON p.serialNum = a.serialNumAkt
+  WHERE p.noUnit = ?
+  " . ($userRole !== 'Admin' ? " AND k.idPengguna = ?" : "") . "
+  ORDER BY p.serialNum
 ";
-$params = [$userId, $unit];
+
+$params = [$unit];
+if ($userRole !== 'Admin') {
+    $params[] = $userId;
+}
+
 $stmt = sqlsrv_query($conn, $sql, $params);
 if ($stmt === false) {
     die(print_r(sqlsrv_errors(), true));
 }
 
 $devices = [];
-while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+while ($r = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
     $devices[] = [
-      'serialNum' => $row['serialNum'],
-      'tglPasang' => $row['tglPasang']->format('Y-m-d') // format jadi string
+      'serialNum' => $r['serialNum'],
+      'tglPasang' => $r['tglPasang']->format('Y-m-d'),
+      'statusAkt' => $r['statusAkt'],
+      'isOwner' => ($userRole === 'Admin' || $r['ownerId'] == $userId) // Add ownership flag
     ];
 }
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -75,7 +90,6 @@ while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
     }
     tr:hover { background:#f0f8ff; }
     tr.selected { background:#add8e6; }
-    /* Panel kanan */
     .info-box {
       flex:1; padding:24px; margin:16px;
       background:#fff; border-radius:8px;
@@ -90,21 +104,25 @@ while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
   </style>
 </head>
 <body>
-
   <div class="sidebar">
     <div class="sidebar-header">
       <h2>Perangkat IoT</h2>
-      <button id="back-btn" class="exit-button" title="Tambah Perangkat">
-        <img src="images/back2.png" alt="Tambah">
+      <button id="back-btn" class="exit-button" title="Kembali">
+        <img src="images/back2.png" alt="Back">
       </button>
     </div>
+    
     <table id="deviceTable">
-      <tr><th>Serial Number</th></tr>
+      <tr><th>Serial Number</th><th>Status</th></tr>
       <?php foreach ($devices as $d): ?>
-      <tr data-serial="<?= htmlspecialchars($d['serialNum']) ?>"
-          data-tgl="<?= htmlspecialchars($d['tglPasang']) ?>">
-        <td><?= htmlspecialchars($d['serialNum']) ?></td>
-      </tr>
+      <tr
+      data-serial="<?= htmlspecialchars($d['serialNum']) ?>"
+      data-tgl="<?= htmlspecialchars($d['tglPasang']) ?>"
+      data-statusakt="<?= htmlspecialchars($d['statusAkt'] ?? '') ?>"
+      data-owner="<?= $d['isOwner'] ? 'true' : 'false' ?>">
+      <td><?= htmlspecialchars($d['serialNum']) ?></td>
+      <td><?= $d['statusAkt'] ? htmlspecialchars($d['statusAkt']) : '-' ?></td>
+    </tr>
       <?php endforeach; ?>
     </table>
   </div>
@@ -115,39 +133,100 @@ while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const rows   = document.querySelectorAll('#deviceTable tr[data-serial]');
-      const info   = document.getElementById('infoBox');
-      const btnAdd = document.getElementById('btnAddDevice');
+document.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.getElementById('back-btn');
+    const rows = document.querySelectorAll('#deviceTable tr[data-serial]');
+    const info = document.getElementById('infoBox');
+    let currentRow = null;
 
-      rows.forEach(row => {
-        row.addEventListener('click', function() {
-          rows.forEach(r => r.classList.remove('selected'));
-          this.classList.add('selected');
-
-          const serial = this.dataset.serial;
-          const tgl     = this.dataset.tgl;
-          // karakter ke-3 (index 2)
-          const typeChar = serial.charAt(2);
-          const tipe = typeChar === '1'
-                     ? 'Sensor'
-                     : typeChar === '2'
-                       ? 'Aktuator'
-                       : 'Unknown';
-
-          info.innerHTML = `
-            <h2>Detail Perangkat ${serial}</h2>
-            <div class="device-detail">
-              <strong>Serial Number:</strong> ${serial}<br>
-              <strong>Tanggal Pasang:</strong> ${tgl}<br>
-              <strong>Tipe:</strong> ${tipe}
-            </div>`;
-        });
-      });
-
-      
+    backBtn.addEventListener('click', () => {
+        window.location.href = './listUnit.php';
     });
-  </script><script src="common.js"></script>
 
+    rows.forEach(row => {
+        row.addEventListener('click', () => {
+            rows.forEach(r => r.classList.remove('selected'));
+            row.classList.add('selected');
+            currentRow = row;
+
+            const serial = row.dataset.serial;
+            const tgl = row.dataset.tgl;
+            const status = row.dataset.statusakt;
+            const isOwner = row.dataset.owner === 'true';
+            const typeChar = serial.charAt(2);
+            const tipe = typeChar === '1' ? 'Sensor' 
+                         : typeChar === '2' ? 'Aktuator' 
+                         : 'Unknown';
+
+            let html = `
+                <h2>Detail ${tipe} ${serial}</h2>
+                <div class="device-detail">
+                    <strong>Serial Number:</strong> ${serial}<br>
+                    <strong>Tanggal Pasang:</strong> ${tgl}<br>
+            `;
+
+            if (typeChar === '2') {
+                html += `
+                    <strong>Status:</strong>
+                    <span id="statusSpan">${status || 'OFF'}</span><br>
+                `;
+                
+                if (isOwner) {
+                    html += `
+                        <button id="toggleBtn" style="margin-top:12px;padding:8px 16px;">
+                            ${status === 'ON' ? 'Turn OFF' : 'Turn ON'}
+                        </button>
+                    `;
+                } else if (userRole === 'Admin') {
+                    html += `<p><em>(Read-only - Admin view)</em></p>`;
+                }
+            } else if (typeChar === '1') {
+                html += `<strong>Tipe:</strong> Sensor (Tidak memiliki kontrol ON/OFF)<br>`;
+            }
+            
+            html += `</div>`;
+            info.innerHTML = html;
+
+            if (typeChar === '2' && isOwner) {
+                document.getElementById('toggleBtn').addEventListener('click', toggleStatus);
+            }
+        });
+    });
+
+    async function toggleStatus() {
+        if (!currentRow || currentRow.dataset.owner !== 'true') {
+            alert("You don't have permission to control this device");
+            return;
+        }
+        
+        const serial = currentRow.dataset.serial;
+        const oldSt = currentRow.dataset.statusakt;
+        const newSt = oldSt === 'ON' ? 'OFF' : 'ON';
+
+        try {
+            const res = await fetch('update_status.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ serial, status: newSt })
+            });
+            const data = await res.json();
+            
+            if (!data.success) {
+                alert('Gagal: ' + (data.error || JSON.stringify(data)));
+                return;
+            }
+            
+            currentRow.dataset.statusakt = newSt;
+            currentRow.cells[1].textContent = newSt;
+            document.getElementById('statusSpan').textContent = newSt;
+            document.getElementById('toggleBtn').textContent = 
+                newSt === 'ON' ? 'Turn OFF' : 'Turn ON';
+        } catch (e) {
+            console.error(e);
+            alert('Kesalahan jaringan');
+        }
+    }
+});
+  </script><script src="./common.js"></script>
 </body>
 </html>

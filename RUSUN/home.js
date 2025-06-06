@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const dataButton = document.querySelector('.data-btn');
     if (dataButton) {
         dataButton.addEventListener('click', function() {
-            alert('Mengunjungi halaman Data (Admin)!'); // TEMP
+            window.location.href = 'EDIT_ADMIN.html';
+             //alert('Mengunjungi halaman Data (Admin)!'); // TEMP
         });
     }
 
