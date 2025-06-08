@@ -101,6 +101,57 @@ while ($r = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
       border:1px dashed #999; border-radius:4px;
       background:#fafafa; line-height:1.5;
     }
+    
+    /* New styles matching Pengendalian Air */
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+    
+    .status-on {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status-off {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .control-button {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-top: 12px;
+    }
+    
+    .control-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-turn-on {
+      background: #28a745;
+      color: white;
+    }
+    
+    .btn-turn-on:hover:not(:disabled) {
+      background: #218838;
+    }
+    
+    .btn-turn-off {
+      background: #dc3545;
+      color: white;
+    }
+    
+    .btn-turn-off:hover:not(:disabled) {
+      background: #c82333;
+    }
   </style>
 </head>
 <body>
@@ -121,7 +172,15 @@ while ($r = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
       data-statusakt="<?= htmlspecialchars($d['statusAkt'] ?? '') ?>"
       data-owner="<?= $d['isOwner'] ? 'true' : 'false' ?>">
       <td><?= htmlspecialchars($d['serialNum']) ?></td>
-      <td><?= $d['statusAkt'] ? htmlspecialchars($d['statusAkt']) : '-' ?></td>
+      <td>
+        <?php if ($d['statusAkt']): ?>
+          <span class="status-badge <?= $d['statusAkt'] === 'ON' ? 'status-on' : 'status-off' ?>">
+            <?= htmlspecialchars($d['statusAkt']) ?>
+          </span>
+        <?php else: ?>
+          -
+        <?php endif; ?>
+      </td>
     </tr>
       <?php endforeach; ?>
     </table>
@@ -168,13 +227,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeChar === '2') {
                 html += `
                     <strong>Status:</strong>
-                    <span id="statusSpan">${status || 'OFF'}</span><br>
+                    <span id="statusSpan" class="status-badge ${status === 'ON' ? 'status-on' : 'status-off'}">${status || 'OFF'}</span><br>
                 `;
                 
                 if (isOwner) {
                     html += `
-                        <button id="toggleBtn" style="margin-top:12px;padding:8px 16px;">
-                            ${status === 'ON' ? 'Turn OFF' : 'Turn ON'}
+                        <button id="toggleBtn" class="control-button ${status === 'ON' ? 'btn-turn-off' : 'btn-turn-on'}">
+                            ${status === 'ON' ? 'TUTUP' : 'BUKA'} 
                         </button>
                     `;
                 } else if (userRole === 'Admin') {
@@ -202,6 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const serial = currentRow.dataset.serial;
         const oldSt = currentRow.dataset.statusakt;
         const newSt = oldSt === 'ON' ? 'OFF' : 'ON';
+        const toggleBtn = document.getElementById('toggleBtn');
+        const statusSpan = document.getElementById('statusSpan');
+        
+        // Set loading state
+        toggleBtn.disabled = true;
+        toggleBtn.textContent = 'PROSES...';
 
         try {
             const res = await fetch('update_status.php', {
@@ -216,14 +281,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
+            // Update data attributes and table cell
             currentRow.dataset.statusakt = newSt;
-            currentRow.cells[1].textContent = newSt;
-            document.getElementById('statusSpan').textContent = newSt;
-            document.getElementById('toggleBtn').textContent = 
-                newSt === 'ON' ? 'Turn OFF' : 'Turn ON';
+            const statusCell = currentRow.cells[1];
+            statusCell.innerHTML = `<span class="status-badge ${newSt === 'ON' ? 'status-on' : 'status-off'}">${newSt}</span>`;
+            
+            // Update detail view
+            statusSpan.textContent = newSt;
+            statusSpan.className = `status-badge ${newSt === 'ON' ? 'status-on' : 'status-off'}`;
+            toggleBtn.className = `control-button ${newSt === 'ON' ? 'btn-turn-off' : 'btn-turn-on'}`;
+            toggleBtn.textContent = newSt === 'ON' ? 'TUTUP' : 'BUKA';
+            
         } catch (e) {
             console.error(e);
             alert('Kesalahan jaringan');
+        } finally {
+            toggleBtn.disabled = false;
         }
     }
 });

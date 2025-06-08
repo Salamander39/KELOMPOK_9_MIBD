@@ -41,7 +41,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const simulasiButton = document.querySelector('.sim-btn');
     if (simulasiButton) {
         simulasiButton.addEventListener('click', function() {
-            alert('Mengunjungi halaman Simulasi (Admin)!'); // TEMP
+            window.location.href = 'simulasi_air.php';
+            //alert('Mengunjungi halaman Simulasi (Admin)!'); // TEMP
         });
     }
 
@@ -50,8 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const pengendalianButton = document.querySelector('.pengendalian-btn');
     if (pengendalianButton) {
         pengendalianButton.addEventListener('click', function() {
-            alert('Mengunjungi halaman Pengendalian Air (Pengelola)!'); //TEMP
+            //alert('Mengunjungi halaman Pengendalian Air (Pengelola)!'); //TEMP
             // REDIRECT
+            window.location.href = 'pengendalianAir.php';
         });
     }
 
@@ -60,8 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const pemakaianButton = document.querySelector('.pemakaian-btn');
     if (pemakaianButton) {
         pemakaianButton.addEventListener('click', function() {
-            alert('Mengunjungi halaman Pemakaian Air (Pengelola)!'); //TEMP
+            //alert('Mengunjungi halaman Pemakaian Air (Pengelola)!'); //TEMP
             // REDIRECT
+            window.location.href = 'pemakaianAirAll.php';
         });
     }
 

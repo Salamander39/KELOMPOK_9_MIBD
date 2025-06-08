@@ -4,62 +4,70 @@ require_once 'config.php';
 
 $userId = $_SESSION['user_id'] ?? null;
 if (!$userId) {
-    die("Unauthorized");
+    header('Location: login.php'); // Redirect to login page if not authorized
+    exit();
 }
 
 $message = '';
+$noUnit = $_GET['noUnit'] ?? null; 
 
+// If noUnit is missing, stop execution or redirect
+if (!$noUnit) {
+    die("Error: Nomor Unit tidak disediakan untuk penugasan.");
+}
+
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $noUnit = $_POST['noUnit'] ?? '';
-    // idPengguna can be NULL, so allow empty string which will be converted to NULL
-    $idPengguna = $_POST['idPengguna'] ?? ''; 
+    $selectedIdPengguna = $_POST['idPengguna'] ?? '';
+    $unitToUpdate = $_POST['noUnit'] ?? ''; // Hidden field from the form
 
-    if (empty($noUnit)) {
-        $message = '<p style="color: red;">Nomor Unit tidak boleh kosong.</p>';
+    // Ensure noUnit from hidden field matches the one from GET to prevent tampering
+    if ($unitToUpdate !== $noUnit) {
+        $message = '<p style="color: red;">Kesalahan validasi unit. Harap coba lagi.</p>';
     } else {
-        $checkSql = "   SELECT noUnit 
-                        FROM Kepemilikan 
-                        WHERE noUnit = ?";
-        $checkStmt = sqlsrv_query($conn, $checkSql, array($noUnit));
-        if ($checkStmt === false) {
-            $message = '<p style="color: red;">Error checking existing unit: ' . print_r(sqlsrv_errors(), true) . '</p>';
-        } else if (sqlsrv_has_rows($checkStmt)) {
-            $message = '<p style="color: red;">Nomor Unit tersebut sudah ada.</p>';
+        // Convert empty string from select option to NULL for database
+        $idPenggunaParam = !empty($selectedIdPengguna) ? $selectedIdPengguna : NULL;
+
+        // SQL to update idPengguna for the specific noUnit
+        $updateSql = "UPDATE Kepemilikan 
+                      SET idPengguna = ? 
+                      WHERE noUnit = ?";
+        $updateParams = [$idPenggunaParam, $noUnit];
+        $updateStmt = sqlsrv_query($conn, $updateSql, $updateParams);
+
+        if ($updateStmt === false) {
+            error_log("Error updating idPengguna for unit " . $noUnit . ": " . print_r(sqlsrv_errors(), true));
+            $message = '<p style="color: red;">Gagal memperbarui ID Pengguna: ' . print_r(sqlsrv_errors(), true) . '</p>';
         } else {
-            // Convert empty string to NULL for database insertion
-            $idPenggunaParam = (!empty($idPengguna)) ? $idPengguna : NULL; 
-
-            $insertSql = "INSERT INTO Kepemilikan (noUnit, idPengguna) VALUES (?, ?)";
-            $insertParams = array($noUnit, $idPenggunaParam); // Use the potentially NULL parameter
-            $insertStmt = sqlsrv_query($conn, $insertSql, $insertParams);
-
-            if ($insertStmt === false) {
-                $message = '<p style="color: red;">Gagal menambahkan unit: ' . print_r(sqlsrv_errors(), true) . '</p>';
-            } else {
-                $message = '<p style="color: green;">Unit berhasil ditambahkan!</p>';
-            }
+            $_SESSION['message'] = "ID Pengguna berhasil diperbarui untuk unit " . htmlspecialchars($noUnit) . "!";
+            header("Location: edit_prusun.php"); // Redirect back
+            exit();
         }
     }
 }
 
+// Fetch list of existing owners (pemilik) for the dropdown
 $pemilikList = [];
+
 $pemilikSql = " SELECT idPengguna, nama 
                 FROM pemilik 
-                ORDER BY idPengguna ASC";
+                ORDER BY idPengguna ASC"; 
+
+
 $pemilikStmt = sqlsrv_query($conn, $pemilikSql);
 if ($pemilikStmt === false) {
-    die(print_r(sqlsrv_errors(), true));
+    error_log("Error fetching pemilik list: " . print_r(sqlsrv_errors(), true));
+    die("Terjadi kesalahan saat memuat daftar pemilik.");
 }
 while ($row = sqlsrv_fetch_array($pemilikStmt, SQLSRV_FETCH_ASSOC)) {
     $pemilikList[] = $row;
 }
-
 ?>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Tambah Unit Baru</title>
+    <title>Assign ID Pengguna</title>
     <link href="https://fonts.googleapis.com/css?family=Offside&display=swap" rel="stylesheet">
     <style>
         body {
@@ -74,6 +82,7 @@ while ($row = sqlsrv_fetch_array($pemilikStmt, SQLSRV_FETCH_ASSOC)) {
         }
         .container {
             width: 50%;
+            max-width: 500px; /* Limit width */
             background: #fff;
             padding: 30px;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
@@ -92,13 +101,13 @@ while ($row = sqlsrv_fetch_array($pemilikStmt, SQLSRV_FETCH_ASSOC)) {
             margin-bottom: 5px;
             font-weight: bold;
         }
-        .form-group input[type="text"],
         .form-group select {
-            width: calc(100% - 22px);
+            width: 100%; /* Make select fill the width */
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 4px;
             font-size: 1rem;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
         }
         .form-group input[type="submit"] {
             background-color: rgb(1, 138, 56);
@@ -132,23 +141,34 @@ while ($row = sqlsrv_fetch_array($pemilikStmt, SQLSRV_FETCH_ASSOC)) {
         .message {
             text-align: center;
             margin-bottom: 15px;
+            font-weight: bold;
+        }
+        /* Specific styles for message types */
+        .message p {
+            margin: 0;
+            padding: 8px;
+            border-radius: 5px;
+        }
+        .message p[style*="color: red"] { /* For PHP messages */
+            background-color: #f8d7da;
+            border: 1px solid #dc3545;
+            color: #721c24;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>Tambah Unit Baru</h2>
-        <div class="message"><?= $message ?></div>
+        <h2>Assign ID Pengguna to Unit <?= htmlspecialchars($noUnit) ?></h2>
+        <?php if (!empty($message)): ?>
+            <div class="message"><?= $message ?></div>
+        <?php endif; ?>
         <form action="" method="POST">
+            <input type="hidden" name="noUnit" value="<?= htmlspecialchars($noUnit) ?>">
             <div class="form-group">
-                <label for="noUnit">Nomor Unit:</label>
-                <input type="text" id="noUnit" name="noUnit" required>
-            </div>
-            <div class="form-group">
-                <label for="idPengguna">ID Pengguna (Pemilik):</label>
-                <select id="idPengguna" name="idPengguna">
-                    <option value="">Tidak Ditetapkan</option> 
+                <label for="idPengguna">Pilih ID Pengguna:</label>
+                <select id="idPengguna" name="idPengguna" required>
+                    <option value="">-- Pilih Pemilik --</option>
                     <?php foreach ($pemilikList as $pemilik): ?>
                         <option value="<?= htmlspecialchars($pemilik['idPengguna']) ?>">
                             <?= htmlspecialchars($pemilik['nama']) ?> (<?= htmlspecialchars($pemilik['idPengguna']) ?>)
@@ -157,10 +177,10 @@ while ($row = sqlsrv_fetch_array($pemilikStmt, SQLSRV_FETCH_ASSOC)) {
                 </select>
             </div>
             <div class="form-group">
-                <input type="submit" value="Tambah Unit">
+                <input type="submit" value="Assign ID Pengguna">
             </div>
         </form>
-        <a href="edit_prusun.php" class="back-button">Kembali ke Daftar Unit</a>
+        <a href="list_unit.php" class="back-button">Kembali ke Daftar Unit</a>
     </div>
 
 </body>

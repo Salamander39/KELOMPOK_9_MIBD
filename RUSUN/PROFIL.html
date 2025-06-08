@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profil Unit</title>
   <link href="https://fonts.googleapis.com/css?family=Offside&display=swap" rel="stylesheet">
-  <link href="./css/PROFIl.css" rel="stylesheet">
+  <link href="./css/PROFIL.css" rel="stylesheet">
 </head>
 <body>
   <div class="profile-container">
@@ -26,7 +26,33 @@
         <div class="detail-row"><span class="label">Psw unit</span><span class="separator">:</span><span class="value">******</span></div>
       </div>
       
+      <button class="settings-button">
+        <img src="images/gear.png" alt="Settings">
+      </button>
 
+    </div>
+  </div>
+
+  <div id="passwordChangeModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button">&times;</span>
+      <h2>Ganti Password</h2>
+      <form id="passwordChangeForm">
+        <div class="form-group">
+          <label for="oldPassword">Password Lama:</label>
+          <input type="password" id="oldPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="newPassword">Password Baru:</label>
+          <input type="password" id="newPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="confirmNewPassword">Konfirmasi Password Baru:</label>
+          <input type="password" id="confirmNewPassword" required>
+        </div>
+        <button type="submit" class="btn btn-save">Simpan Perubahan</button>
+      </form>
+      <div id="passwordMessage" class="message"></div>
     </div>
   </div>
 

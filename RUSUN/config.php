@@ -1,6 +1,6 @@
 <?php
 // config.php
-$serverName = "LODAYA";    // sesuaikan
+$serverName = "LODAYA";    
 $connectionOptions = [
   "Database" => "RUSUNAMI",
   "Uid"      => "",

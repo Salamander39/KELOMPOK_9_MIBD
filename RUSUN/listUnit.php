@@ -2,11 +2,11 @@
 session_start();
 require_once 'config.php';
 
+
 $userId = $_SESSION['user_id'] ?? null;
 if (!$userId) {
-    die("Unauthorized");
+    die("Unauthorized: User ID not found in session. Please ensure you are logged in.");
 }
-$userRole = $_SESSION['userRole'] ?? null;
 
 $sql = "
     SELECT noUnit
@@ -18,7 +18,10 @@ $sql = "
 $params = [$userId];
 $stmt = sqlsrv_query($conn, $sql, $params);
 if ($stmt === false) {
-    die(print_r(sqlsrv_errors(), true));
+    // --- DEBUGGING OUTPUT START ---
+    error_log("listUnit.php: SQL Query Error: " . print_r(sqlsrv_errors(), true));
+    // --- DEBUGGING OUTPUT END ---
+    die("Database query failed: " . print_r(sqlsrv_errors(), true));
 }
 
 $units = [];

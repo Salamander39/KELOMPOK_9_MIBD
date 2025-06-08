@@ -1,53 +1,46 @@
 <?php
-session_start();
-//if (session_status() !== PHP_SESSION_ACTIVE) {
-   // session_regenerate_id(true);
-//}
-
-$serverName = "LODAYA";
-$connectionOptions = [
-    "Database" => "RUSUNAMI",
-    "Uid" => "",
-    "PWD" => ""
-];
-
-$conn = sqlsrv_connect($serverName, $connectionOptions);
-if (!$conn) {
-    http_response_code(500);
-    echo json_encode(["error" => "Database connection error."]);
-    exit;
+// Pastikan tidak ada output sebelum session_start()
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+require_once 'config.php';
+require_once 'log_action.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['otp'])) {
-    $enteredOtp = $_POST['otp'];
-
-    $correctOtp = $_SESSION['generated_otp'];
-
-    if (!isset($_SESSION['temp_user_id_for_otp_verification'])) {
-        http_response_code(400);
-        echo "SESSION_EXPIRED";
-        exit;
-    }
+    $submittedOtp = trim($_POST['otp']);
+    $generatedOtp = isset($_SESSION['generated_otp']) ? trim($_SESSION['generated_otp']) : null;
     
-    $userId = $_SESSION['temp_user_id_for_otp_verification'];
-    $phone = $_SESSION['phone_for_otp_verification'];
- 
-    if ($enteredOtp === $correctOtp) {
-        $_SESSION['user_id'] = $userId;
-        $_SESSION['is_logged_in'] = true;
+    if ($generatedOtp !== null && $submittedOtp === $generatedOtp) {
+        $userId = $_SESSION['temp_user_id_for_otp_verification'] ?? null;
         
-        // Clear temporary data
-        unset($_SESSION['temp_user_id_for_otp_verification']);
-        unset($_SESSION['phone_for_otp_verification']);
-        unset($_SESSION['generated_otp']); // Clear the OTP after successful verification
+        if ($userId) {
+            // >>>>>>>>>>>>>> THIS IS THE CRITICAL FIX SECTION <<<<<<<<<<<<<<
+            // These lines ensure the correct user ID is set and temporary variables are cleared
+            $_SESSION['user_id'] = $userId;
+            $_SESSION['is_logged_in'] = true;
+            unset($_SESSION['temp_user_id_for_otp_verification']);
+            unset($_SESSION['phone_for_otp_verification']);
+            // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>> END OF FIX <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-        echo "MATCH|" . $userId;
+            logAction($conn, $userId, 'Login berhasil', $generatedOtp);
+            echo "MATCH|" . $userId;
+        } else {
+            echo "NO_MATCH|User ID not found in session";
+        }
+        
+        // Bersihkan OTP dari session setelah digunakan
+        unset($_SESSION['generated_otp']);
     } else {
-        echo "NO_MATCH";
+        $userId = $_SESSION['temp_user_id_for_otp_verification'] ?? null;
+        if ($userId) {
+            logAction($conn, $userId, 'Login gagal (OTP salah)', $submittedOtp);
+        }
+        echo "NO_MATCH|OTP tidak sesuai";
     }
 } else {
-    http_response_code(400);
-    echo "Invalid request";
+    echo "INVALID_REQUEST";
 }
+
 sqlsrv_close($conn);
 ?>

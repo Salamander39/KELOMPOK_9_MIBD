@@ -46,8 +46,8 @@ if ($rowsAffected === 0) {
     }
 }
 
-// 3) Catat LogAksi
-$ket = $newStatus === 'ON' ? 'buka aktuator' : 'tutup aktuator';
+// 3) Catat LogAksi dengan serial number
+$ket = ($newStatus === 'ON' ? 'buka aktuator ' : 'tutup aktuator ') . $serial;
 $sqlLog = "INSERT INTO LogAksi (idPengguna, ketAksi) VALUES (?, ?)";
 sqlsrv_query($conn, $sqlLog, [$userId, $ket]);
 

@@ -181,10 +181,9 @@
 
 .send-otp-button {
   position: absolute;
-  top: 340px;
+  bottom: 25px;
   left: 34%;
-  transform: translateX(-50%);
-  transform: translateY(400%);
+  transform: translateX(50%);
   width: 200px;
   height: 50px;
   background: rgba(0,105,59,1);

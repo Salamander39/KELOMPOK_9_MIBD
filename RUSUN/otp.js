@@ -36,47 +36,52 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   verifyButton.addEventListener('click', function() {
-    if (!this.disabled) {
-        const otpCode = Array.from(otpBoxes).map(box => box.value).join('');
+      if (!this.disabled) {
+          const otpCode = Array.from(otpBoxes).map(box => box.value).join('');
+          
+          console.log("Submitting OTP:", otpCode); // Debugging
 
-        fetch('verify_otp.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'otp=' + encodeURIComponent(otpCode),
-        })
-        .then(response => response.text())
-        .then(data => {
-            const parts = data.trim().split('|');
-            if (parts[0] === 'MATCH') {
-                alert('OTP verified successfully!');
-                const userId = parts[1];
-                localStorage.setItem('loggedInUserId', userId);
+          fetch('verify_otp.php', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded',
+              },
+              body: 'otp=' + encodeURIComponent(otpCode),
+          })
+          .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.text();
+          })
+          .then(data => {
+              console.log("Server response:", data); // Debugging
+              const parts = data.trim().split('|');
+              
+              if (parts[0] === 'MATCH') {
+                  const userId = parts[1];
+                  localStorage.setItem('loggedInUserId', userId);
+                  const userRole = localStorage.getItem('userRole');
 
-                const userRole = localStorage.getItem('userRole');
-
-                switch (userRole) {
-                    case 'Admin':
-                        window.location.href = 'HOME_Admin.html';
-                        break;
-                    case 'Pengelola':
-                        window.location.href = 'HOME_Pengelola.html';
-                        break;
-                    case 'Pemilik':
-                    default:
-                        window.location.href = 'HOME.html';
-                        break;
-                }
-                localStorage.removeItem('userRole');
-            } else {
-                alert('Invalid OTP. Please try again.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error during OTP verification:', error);
-            alert('An error occurred during OTP verification.');
-        });
+                  // Redirect berdasarkan role
+                  const redirects = {
+                      'Admin': 'HOME_Admin.html',
+                      'Pengelola': 'HOME_Pengelola.html',
+                      'Pemilik': 'HOME.html'
+                  };
+                  
+                  window.location.href = redirects[userRole] || 'HOME.html';
+              } else {
+                  alert('Invalid OTP. Server message: ' + (parts[1] || 'No additional info'));
+                  // Reset OTP boxes
+                  otpBoxes.forEach(box => box.value = '');
+                  otpBoxes[0].focus();
+              }
+          })
+          .catch((error) => {
+              console.error('Error during OTP verification:', error);
+              alert('Error during verification. Check console for details.');
+          });
       }
   });
 
@@ -91,4 +96,4 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Failed to generate OTP. Please try again.');
         });
   });
-});
+})
